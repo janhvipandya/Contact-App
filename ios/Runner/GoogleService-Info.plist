@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>API_KEY</key>
+	<string>AIzaSyB53Fw2n2MlyTBAz54guzeiBP96DnIsfl8</string>
+	<key>GCM_SENDER_ID</key>
+	<string>600083975808</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.example.firstApp</string>
+	<key>PROJECT_ID</key>
+	<string>contacts-app-4e6f1</string>
+	<key>STORAGE_BUCKET</key>
+	<string>contacts-app-4e6f1.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:600083975808:ios:b881eb6e7165708e3ca065</string>
+	<key>DATABASE_URL</key>
+	<string>https://contacts-app-4e6f1-default-rtdb.firebaseio.com</string>
+</dict>
+</plist>
