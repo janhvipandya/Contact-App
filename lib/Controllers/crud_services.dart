@@ -8,8 +8,17 @@ class CRUDService {
 
   //add new contacts to firestore
   Future addNewContacts(
-      String name, String phone, String email, List<String> groupIds) async {
-    Map<String, dynamic> data = {"name": name, "email": email, "phone": phone};
+    String name,
+    String phone,
+    String email,
+    List<String> groupIds,
+  ) async {
+    Map<String, dynamic> data = {
+      "name": name,
+      "email": email,
+      "phone": phone,
+      "isFavourite": false,
+    };
     try {
       await FirebaseFirestore.instance
           .collection("users")
@@ -20,6 +29,19 @@ class CRUDService {
     } catch (e) {
       print(e.toString());
     }
+  }
+
+  //Get Favourite Contacts
+  Stream<QuerySnapshot> getFavouriteContacts() async* {
+    var favouriteContactsQuery = FirebaseFirestore.instance
+        .collection("users")
+        .doc(user!.uid)
+        .collection("contacts")
+        .where("isFavourite", isEqualTo: true)
+        .orderBy("name");
+
+    var favouriteContacts = favouriteContactsQuery.snapshots();
+    yield* favouriteContacts;
   }
 
   //read document inside
@@ -48,9 +70,14 @@ class CRUDService {
   }
 
   //update a contact
-  Future updateContact(
-      String name, String phone, String email, String docID) async {
-    Map<String, dynamic> data = {"name": name, "email": email, "phone": phone};
+  Future updateContact(String name, String phone, String email, String docID,
+      bool isFavourite) async {
+    Map<String, dynamic> data = {
+      "name": name,
+      "email": email,
+      "phone": phone,
+      "isFavourite": isFavourite
+    };
     try {
       await FirebaseFirestore.instance
         ..collection("users")
@@ -80,34 +107,29 @@ class CRUDService {
   }
 
   //Favouritecontact
-  Future<void> toggleFavoriteContact(String docID, bool isFavorite) async {
-    try {
-      await FirebaseFirestore.instance
-          .collection("users")
-          .doc(user!.uid)
-          .collection("contacts")
-          .doc(docID)
-          .update({'isFavorite': isFavorite});
-      print("Contact favorited/unfavorited");
-    } catch (e) {
-      print(e.toString());
-    }
-  }
+  Future<void> toggleFavoriteContact(String docId, bool isFavorite) async {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user!.uid)
+        .collection("contacts")
+        .doc(docId)
+        .update({'isFavourite': isFavorite});
 
-  //Groupid
+    //Groupid
 
-  Future<List<Map<String, dynamic>>> getContactsByGroupId(
-      String groupId) async {
-    try {
-      QuerySnapshot<Map<String, dynamic>> querySnapshot =
-          await contactsCollection
-              .where('groupIds', arrayContains: groupId)
-              .get() as QuerySnapshot<Map<String, dynamic>>;
+    Future<List<Map<String, dynamic>>> getContactsByGroupId(
+        String groupId) async {
+      try {
+        QuerySnapshot<Map<String, dynamic>> querySnapshot =
+            await contactsCollection
+                .where('groupIds', arrayContains: groupId)
+                .get() as QuerySnapshot<Map<String, dynamic>>;
 
-      return querySnapshot.docs.map((doc) => doc.data()).toList();
-    } catch (e) {
-      print('Error fetching contacts by group ID: $e');
-      return [];
+        return querySnapshot.docs.map((doc) => doc.data()).toList();
+      } catch (e) {
+        print('Error fetching contacts by group ID: $e');
+        return [];
+      }
     }
   }
 }

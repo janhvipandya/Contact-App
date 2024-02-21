@@ -29,6 +29,7 @@ class _AddContactState extends State<AddContact> {
                 SizedBox(
                     width: MediaQuery.of(context).size.width * .9,
                     child: TextFormField(
+                      autovalidateMode: AutovalidateMode.always,
                       validator: (value) =>
                           value!.isEmpty ? "Enter any name" : null,
                       controller: _nameController,
@@ -43,6 +44,14 @@ class _AddContactState extends State<AddContact> {
                 SizedBox(
                     width: MediaQuery.of(context).size.width * .9,
                     child: TextFormField(
+                      autovalidateMode: AutovalidateMode.always,
+                      validator: (value) {
+                        if (value!.isEmpty) return "Phone Number is Required.";
+                        if (value!.length < 10 || value.length > 10)
+                          return "10 digits are required";
+                        ;
+                        return null;
+                      },
                       controller: _phoneController,
                       decoration: InputDecoration(
                         border: OutlineInputBorder(),

@@ -1,5 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:first_app/Controllers/crud_services.dart';
 import 'package:first_app/Views/add_contact_page.dart';
+import 'package:first_app/Views/favourite_page.dart';
 import 'package:first_app/Views/home.dart';
 import 'package:first_app/Views/login_page.dart';
 import 'package:first_app/Views/sign_up_page.dart';
@@ -35,7 +37,9 @@ class MyApp extends StatelessWidget {
         "/home": (context) => Homepage(),
         "/signup": (context) => SignupPage(),
         "/login": (context) => LoginPage(),
-        "/add": (context) => AddContact()
+        "/add": (context) => AddContact(),
+        "/favourites": (context) => FavoritesPage(
+            favoriteContactsStream: CRUDService().getFavouriteContacts()),
       },
     );
   }

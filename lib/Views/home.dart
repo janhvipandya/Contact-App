@@ -40,15 +40,6 @@ class _HomepageState extends State<Homepage> {
     }
   }
 
-  //groupid
-  Future<void> fetchContactsByGroupId(String groupId) async {
-    List<Map<String, dynamic>> contacts =
-        await CRUDService().getContactsByGroupId(groupId);
-
-    // Process and use contacts as needed
-    print('Contacts by Group ID: $contacts');
-  }
-
   // search Function to perform search
 
   searchContacts(String search) {
@@ -99,102 +90,124 @@ class _HomepageState extends State<Homepage> {
         child: Icon(Icons.person_add),
       ),
       drawer: Drawer(
-          child: ListView(
-        children: [
-          DrawerHeader(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              CircleAvatar(
-                maxRadius: 32,
-                child: Text(FirebaseAuth.instance.currentUser!.email
-                    .toString()[0]
-                    .toUpperCase()),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              Text(FirebaseAuth.instance.currentUser!.email.toString())
-            ],
-          )),
-          ListTile(
-            onTap: () {
-              AuthService().logout();
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text("Logged Out")));
-              Navigator.pushReplacementNamed(context, "/login");
-            },
-            leading: Icon(Icons.logout_outlined),
-            title: Text("Logout"),
-          )
-        ],
-      )),
+        child: ListView(
+          children: [
+            DrawerHeader(
+                child: Column(
+              mainAxisAlignment: MainAxisAlignment.end,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CircleAvatar(
+                  maxRadius: 32,
+                  child: Text(FirebaseAuth.instance.currentUser!.email
+                      .toString()[0]
+                      .toUpperCase()),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                Text(FirebaseAuth.instance.currentUser!.email.toString())
+              ],
+            )),
+            ListTile(
+              onTap: () {
+                AuthService().logout();
+                ScaffoldMessenger.of(context)
+                    .showSnackBar(SnackBar(content: Text("Logged Out")));
+                Navigator.pushReplacementNamed(context, "/login");
+              },
+              leading: Icon(Icons.logout_outlined),
+              title: Text("Logout"),
+            ),
+            ListTile(
+              onTap: () {
+                var favouritecontacts = CRUDService().getFavouriteContacts();
+
+                Navigator.pushNamed(context, "/favourites",
+                    arguments: favouritecontacts);
+              },
+              leading: Icon(Icons.star),
+              title: Text("Favourite Contacts"),
+            ),
+          ],
+        ),
+      ),
       body: StreamBuilder<QuerySnapshot>(
-          stream: _stream,
-          builder:
-              (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-            if (snapshot.hasError) {
-              return Text("Something Went Wrong");
-            }
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return Center(
-                child: Text("Loading"),
-              );
-            }
-            return snapshot.data!.docs.length == 0
-                ? Center(
-                    child: Text("No Contacts Found ..."),
+        stream: _stream,
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (snapshot.hasError) {
+            return Text("Something Went Wrong");
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(
+              child: Text("Loading"),
+            );
+          }
+          return snapshot.data!.docs.length == 0
+              ? Center(
+                  child: Text("No Contacts Found ..."),
+                )
+              : AnimatedList(
+                  key: GlobalKey<AnimatedListState>(),
+                  initialItemCount: snapshot.data!.docs.length,
+                  itemBuilder: (context, index, animation) {
+                    return SlideTransition(
+                      position: Tween<Offset>(
+                        begin: Offset(1.0, 0.0),
+                        end: Offset(0.0, 0.0),
+                      ).animate(animation),
+                      child: buildListItem(snapshot.data!.docs[index]),
+                    );
+                  },
+                );
+        },
+      ),
+    );
+  }
+
+  Widget buildListItem(DocumentSnapshot document) {
+    Map<String, dynamic>? data = document.data()! as Map<String, dynamic>;
+    return ListTile(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => UpdateContact(
+            name: data["name"],
+            phone: data["phone"],
+            email: data["email"],
+            docID: document.id,
+          ),
+        ),
+      ),
+      leading: CircleAvatar(child: Text(data["name"][0])),
+      title: Text(data["name"]),
+      subtitle: Text(data["phone"]),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(
+            icon: Icon(Icons.call),
+            onPressed: () {
+              callUser(data["phone"]);
+            },
+          ),
+          IconButton(
+            icon: data["isFavourite"] == true
+                ? Icon(
+                    Icons.star,
+                    color: Colors.yellow,
                   )
-                : ListView(
-                    children: snapshot.data!.docs
-                        .map((DocumentSnapshot document) {
-                          Map<String, dynamic>? data =
-                              document.data()! as Map<String, dynamic>;
-                          return ListTile(
-                            onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                    builder: (context) => UpdateContact(
-                                        name: data["name"],
-                                        phone: data["phone"],
-                                        email: data["email"],
-                                        docID: document.id))),
-                            leading: CircleAvatar(child: Text(data["name"][0])),
-                            title: Text(data["name"]),
-                            subtitle: Text(data["phone"]),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: Icon(Icons.call),
-                                  onPressed: () {
-                                    callUser(data["phone"]);
-                                  },
-                                ),
-                                IconButton(
-                                  icon: data["isFavourite"] == true
-                                      ? Icon(
-                                          Icons.star,
-                                          color: Colors.yellow,
-                                        )
-                                      : Icon(Icons.star_border),
-                                  onPressed: () {
-                                    bool isFavourite =
-                                        data["isFavourite"] ?? false;
-                                    CRUDService().toggleFavoriteContact(
-                                        document.id, !isFavourite);
-                                    setState(() {});
-                                  },
-                                ),
-                              ],
-                            ),
-                          );
-                        })
-                        .toList()
-                        .cast(),
-                  );
-          }),
+                : Icon(Icons.star_border),
+            onPressed: () {
+              bool isFavourite = data["isFavourite"] ?? false;
+              print("isFavourite: $isFavourite");
+
+              CRUDService().toggleFavoriteContact(document.id, !isFavourite);
+              setState(() {});
+            },
+          ),
+        ],
+      ),
     );
   }
 }

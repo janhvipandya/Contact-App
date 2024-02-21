@@ -90,7 +90,8 @@ class _UpdateContactState extends State<UpdateContact> {
                                 _nameController.text,
                                 _phoneController.text,
                                 _emailController.text,
-                                widget.docID);
+                                widget.docID,
+                                false);
                             Navigator.pop(context);
                           }
                         },
